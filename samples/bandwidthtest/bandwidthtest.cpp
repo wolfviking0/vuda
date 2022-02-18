@@ -1,22 +1,23 @@
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <cstring>
 
 #if defined(__NVCC__)
-    #include <cuda_runtime.h>
+#include <cuda_runtime.h>
 #else
-    #if !defined(NDEBUG)
-    #define VUDA_STD_LAYER_ENABLED
-    #define VUDA_DEBUG_ENABLED
-    #endif
-    #include <vuda_runtime.hpp>
+#if !defined(NDEBUG)
+#define VUDA_STD_LAYER_ENABLED
+#define VUDA_DEBUG_ENABLED
+#endif
+#include <vuda_runtime.hpp>
 #endif
 
 #include "../tools/timer.hpp"
 
-void profileCopies(float *h_a, float *h_b, float *d, unsigned int n, std::string desc)
+void profileCopies(float* h_a, float* h_b, float* d, unsigned int n, std::string desc)
 {
-    std::cout << std::endl << desc << " transfers" << std::endl;
+    std::cout << std::endl
+              << desc << " transfers" << std::endl;
 
     const unsigned int bytes = n * sizeof(float);
 
@@ -32,7 +33,7 @@ void profileCopies(float *h_a, float *h_b, float *d, unsigned int n, std::string
 
     float time;
     cudaEventElapsedTime(&time, startEvent, stopEvent);
-    //std::cout << "  Host to Device event-time (s) : " << time * 1e-3 << std::endl;
+    // std::cout << "  Host to Device event-time (s) : " << time * 1e-3 << std::endl;
     std::cout << "  Host to Device bandwidth  (GB/s): " << bytes * 1e-6 / time << std::endl;
 
     cudaEventRecord(startEvent, 0);
@@ -41,13 +42,11 @@ void profileCopies(float *h_a, float *h_b, float *d, unsigned int n, std::string
     cudaEventSynchronize(stopEvent);
 
     cudaEventElapsedTime(&time, startEvent, stopEvent);
-    //std::cout << "  Device to Host event-time (ms) : " << time * 1e-3 << std::endl;
+    // std::cout << "  Device to Host event-time (ms) : " << time * 1e-3 << std::endl;
     std::cout << "  Device to Host bandwidth  (GB/s): " << bytes * 1e-6 / time << std::endl;
 
-    for(unsigned int i = 0; i < n; ++i)
-    {
-        if(h_a[i] != h_b[i])
-        {    
+    for (unsigned int i = 0; i < n; ++i) {
+        if (h_a[i] != h_b[i]) {
             std::cout << "*** " << desc << " transfers failed ***" << std::endl;
             break;
         }
@@ -58,10 +57,11 @@ void profileCopies(float *h_a, float *h_b, float *d, unsigned int n, std::string
     cudaEventDestroy(stopEvent);
 }
 
-void profileCopiesHost(float *h_a, float *h_b, float *d_a, unsigned int n, std::string desc)
+void profileCopiesHost(float* h_a, float* h_b, float* d_a, unsigned int n, std::string desc)
 {
     Timer timer;
-    std::cout << std::endl << desc << " transfers" << std::endl;
+    std::cout << std::endl
+              << desc << " transfers" << std::endl;
 
     double time;
     const unsigned int bytes = n * sizeof(float);
@@ -70,69 +70,69 @@ void profileCopiesHost(float *h_a, float *h_b, float *d_a, unsigned int n, std::
     cudaMemcpy(d_a, h_a, bytes, cudaMemcpyHostToDevice);
     cudaStreamSynchronize(0);
     time = timer.toc();
-    //std::cout << "  Host to Device time      (s)   : " << time << std::endl;
+    // std::cout << "  Host to Device time      (s)   : " << time << std::endl;
     std::cout << "  Host to Device bandwidth (GB/s): " << bytes * 1e-9 / time << std::endl;
 
     timer.tic();
     cudaMemcpy(h_b, d_a, bytes, cudaMemcpyDeviceToHost);
     cudaStreamSynchronize(0);
     time = timer.toc();
-    //std::cout << "  Device to Host time      (s)   : " << time << std::endl;
+    // std::cout << "  Device to Host time      (s)   : " << time << std::endl;
     std::cout << "  Device to Host bandwidth (GB/s): " << bytes * 1e-9 / time << std::endl;
 
-    for(unsigned int i = 0; i < n; ++i)
-    {
-        if(h_a[i] != h_b[i])
-        {   
+    for (unsigned int i = 0; i < n; ++i) {
+        if (h_a[i] != h_b[i]) {
             std::cout << "*** " << desc << " transfers failed ***" << std::endl;
             break;
         }
-    }    
+    }
 }
 
 void run(void)
 {
     // assign device to thread
-    cudaSetDevice(0);    
+    cudaSetDevice(0);
 
     // problem size
     const unsigned int nElements = 16 * 1024 * 1024;
     const unsigned int bytes = nElements * sizeof(float);
-    
+
     // host arrays
     float *h_aPageable, *h_bPageable;
     float *h_aPinned, *h_bPinned;
     float *h_aWC, *h_bWC;
 
     // device array
-    float *d_a;
+    float* d_a;
 
-    // allocate    
-    h_aPageable = (float*)malloc(bytes);                                // host pageable
-    h_bPageable = (float*)malloc(bytes);                                // host pageable
-    cudaMalloc((void**)&d_a, bytes);                                    // device
-    cudaMallocHost((void**)&h_aPinned, bytes);                          // host pinned
-    cudaMallocHost((void**)&h_bPinned, bytes);                          // host pinned
-    cudaHostAlloc((void**)&h_aWC, bytes, cudaHostAllocWriteCombined);   // write-combined
-    cudaHostAlloc((void**)&h_bWC, bytes, cudaHostAllocWriteCombined);   // write-combined
+    // allocate
+    h_aPageable = (float*)malloc(bytes); // host pageable
+    h_bPageable = (float*)malloc(bytes); // host pageable
+    cudaMalloc((void**)&d_a, bytes); // device
+    cudaMallocHost((void**)&h_aPinned, bytes); // host pinned
+    cudaMallocHost((void**)&h_bPinned, bytes); // host pinned
+    cudaHostAlloc((void**)&h_aWC, bytes, cudaHostAllocWriteCombined); // write-combined
+    cudaHostAlloc((void**)&h_bWC, bytes, cudaHostAllocWriteCombined); // write-combined
 
     // initialize data
-    for(unsigned int i = 0; i < nElements; ++i)
+    for (unsigned int i = 0; i < nElements; ++i)
         h_aPageable[i] = (float)i;
-    
+
     std::memcpy(h_aPinned, h_aPageable, bytes);
 
     // output device info and transfer size
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
-    std::cout << std::endl << "Device: " << prop.name << std::endl;
+    std::cout << std::endl
+              << "Device: " << prop.name << std::endl;
     std::cout << "Transfer size (MB): " << bytes / (1024 * 1024) << std::endl;
-    
-    // perform copies and report bandwidth    
+
+    // perform copies and report bandwidth
     std::memset(h_bPageable, 0, bytes);
     std::memset(h_bPinned, 0, bytes);
     std::memset(h_bWC, 0, bytes);
-    std::cout << std::endl << "TIMING USING EVENTS:";
+    std::cout << std::endl
+              << "TIMING USING EVENTS:";
     profileCopies(h_aPageable, h_bPageable, d_a, nElements, "Pageable");
     profileCopies(h_aWC, h_bWC, d_a, nElements, "Write-Combined");
     // NOTE:
@@ -146,11 +146,11 @@ void run(void)
     std::memset(h_bPinned, 0, bytes);
     std::memset(h_bWC, 0, bytes);
     std::cout << std::endl << "TIMING USING HOST:";
-    profileCopiesHost(h_aPageable, h_bPageable, d_a, nElements, "Pageable");    
+    profileCopiesHost(h_aPageable, h_bPageable, d_a, nElements, "Pageable");
     profileCopiesHost(h_aWC, h_bWC, d_a, nElements, "Write-Combined");
     // reading pinned memory from the host is very slow
     profileCopiesHost(h_aPinned, h_bPinned, d_a, nElements, "Pinned");*/
-    
+
     /*
     // query timing
     std::cout << std::endl << "TIMING USING QUERIES:";
@@ -160,7 +160,7 @@ void run(void)
     profileCopiesQuery(h_aPageable, h_bPageable, d_a, nElements, "Pageable");
     profileCopiesQuery(h_aPinned, h_bPinned, d_a, nElements, "Pinned");*/
 
-    //std::cout << std::endl;
+    // std::cout << std::endl;
 
     //
     // cleanup
@@ -175,24 +175,19 @@ void run(void)
 
 int main()
 {
-    try
-    {
+    try {
         run();
     }
 #if !defined(__NVCC__)
-    catch(vk::SystemError& err)
-    {
+    catch (vk::SystemError& err) {
         std::cout << "vk::SystemError: " << err.what() << std::endl;
         return EXIT_FAILURE;
     }
 #endif
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
-    }
-    catch(...)
-    {
+    } catch (...) {
         std::cout << "unknown error\n";
         return EXIT_FAILURE;
     }

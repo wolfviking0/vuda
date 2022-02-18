@@ -2,7 +2,7 @@
 //
 // vudac
 
-#ifndef _DEBUG 
+#ifndef _DEBUG
 #define NDEBUG
 #endif
 #ifndef NDEBUG
@@ -10,8 +10,8 @@
 #define VUDA_DEBUG_ENABLED
 #endif
 
-#include <vuda.hpp>
 #include "../tools/timer.hpp"
+#include <vuda.hpp>
 
 /*
     compute kernels are provided as spir-v.
@@ -33,22 +33,22 @@ void launch_kernel(float* data)
     //
     // invoke kernel
 #if defined(__NVCC__)
-    kernel <<<1, 64 >>> (data, N);
+    kernel<<<1, 64>>>(data, N);
 #else
     //
     // launch kernel using the embedded binary
     vuda::launchKernel(kernel_spv, "main", 0, 1, 64, data, N);
 
     // from file this would look like
-    //vuda::launchKernel("kernel.spv", "main", 0, 1, 64, data, N);
+    // vuda::launchKernel("kernel.spv", "main", 0, 1, 64, data, N);
 #endif
 
     //
     // debugging the kernel
 #ifndef NDEBUG
-    float *host = new float[N];
+    float* host = new float[N];
     vuda::memcpy(host, data, N * sizeof(float), vuda::memcpyDeviceToHost);
-    for(uint32_t i = 0; i < 10; ++i)
+    for (uint32_t i = 0; i < 10; ++i)
         std::cout << host[i] << " ";
     std::cout << std::endl;
     delete[] host;
@@ -69,13 +69,12 @@ void launch()
 
     //
     // allocate a chunk of memory
-    float *data;
+    float* data;
     vuda::malloc((void**)&data, N * sizeof(float));
 
     //
     std::cout << "timing kernel launches" << std::endl;
-    for(unsigned int run = 0; run < totalRuns; ++run)
-    {
+    for (unsigned int run = 0; run < totalRuns; ++run) {
         timer.tic();
         launch_kernel(data);
         elapsed = timer.toc();
@@ -92,27 +91,20 @@ void launch()
 
 int main()
 {
-    try
-    {
+    try {
         launch();
-    }
-    catch(vk::SystemError& err)
-    {
+    } catch (vk::SystemError& err) {
         std::cout << "vk::SystemError: " << err.what() << std::endl;
         return EXIT_FAILURE;
-    }
-    catch(const std::exception& e)
-    {
+    } catch (const std::exception& e) {
         std::cerr << "vuda::Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
-    }
-    catch(...)
-    {
+    } catch (...) {
         std::cout << "unknown error" << std::endl;
         return EXIT_FAILURE;
     }
 
-#ifndef NDEBUG    
+#ifndef NDEBUG
     std::cout << "done." << std::endl;
     std::cin.get();
 #endif

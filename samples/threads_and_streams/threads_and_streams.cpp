@@ -10,18 +10,17 @@
 #include <vuda_runtime.hpp>
 #endif
 
-#include <thread>
-#include <iostream>
-#include <sstream>
-#include <random>
 #include "../tools/timer.hpp"
+#include <iostream>
+#include <random>
+#include <sstream>
+#include <thread>
 
-class Test
-{
+class Test {
 public:
     //
     // Tests
-    typedef int(*funcptr2)(const int, const int, const unsigned int, int*, int*, int*);
+    typedef int (*funcptr2)(const int, const int, const unsigned int, int*, int*, int*);
 
     static int SingleThreadSingleStreamExample(const int tid, const int nthreads, const unsigned int N, int* a, int* b, int* c);
     static int SingleThreadMultipleStreamsExample(const int tid, const int nthreads, const unsigned int FULL_DATA_SIZE, int* a, int* b, int* c);
@@ -36,8 +35,7 @@ public:
 __global__ void add(const int* dev_a, const int* dev_b, int* dev_c, const int N)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
-    while(tid < N)
-    {
+    while (tid < N) {
         dev_c[tid] = dev_a[tid] + dev_b[tid];
         tid += blockDim.x * gridDim.x;
     }
@@ -47,24 +45,19 @@ __global__ void add(const int* dev_a, const int* dev_b, int* dev_c, const int N)
 
 void HandleException(std::string msg)
 {
-    try 
-    {
+    try {
         throw;
     }
 #if !defined(__NVCC__)
-    catch(vk::SystemError& err)
-    {
+    catch (vk::SystemError& err) {
         std::cout << "vk::SystemError: " << err.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 #endif
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
-    }
-    catch(...)
-    {
+    } catch (...) {
         std::cout << "unknown error\n";
         std::exit(EXIT_FAILURE);
     }
@@ -72,8 +65,7 @@ void HandleException(std::string msg)
 
 int Test::SingleThreadSingleStreamExample(const int tid, const int nthreads, const unsigned int N, int* a, int* b, int* c)
 {
-    try
-    {
+    try {
         //
         // settings
         const int deviceID = 0;
@@ -107,7 +99,7 @@ int Test::SingleThreadSingleStreamExample(const int tid, const int nthreads, con
         //
         // run kernel
 #if defined(__NVCC__)
-        add<<< blocks, threads >>>(dev_a, dev_b, dev_c, N);
+        add<<<blocks, threads>>>(dev_a, dev_b, dev_c, N);
 #else
         const int stream_id = 0;
         vuda::launchKernel("add.spv", "main", stream_id, blocks, threads, dev_a, dev_b, dev_c, N);
@@ -129,9 +121,7 @@ int Test::SingleThreadSingleStreamExample(const int tid, const int nthreads, con
         cudaFree(dev_a);
         cudaFree(dev_b);
         cudaFree(dev_c);
-    }    
-    catch(...)
-    {
+    } catch (...) {
         HandleException("SingleThreadSingleStreamExample");
     }
 
@@ -143,8 +133,7 @@ int Test::SingleThreadSingleStreamExample(const int tid, const int nthreads, con
 */
 int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, const unsigned int FULL_DATA_SIZE, int* a, int* b, int* c)
 {
-    try
-    {
+    try {
         //
         // hardcore device 0
         const int deviceID = 0;
@@ -162,7 +151,7 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
         ostr.str("");
 #endif
 
-        if(FULL_DATA_SIZE % 2 != 0)
+        if (FULL_DATA_SIZE % 2 != 0)
             return EXIT_FAILURE;
 
         const int N = FULL_DATA_SIZE / 2;
@@ -171,15 +160,15 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
 
         //
         // create streams
-    #if defined(__NVCC__)
+#if defined(__NVCC__)
         cudaStream_t stream0_id, stream1_id;
         cudaStreamCreate(&stream0_id);
         cudaStreamCreate(&stream1_id);
-    #else
+#else
         // for now, vuda does not create streams, but operates with a maximum number of compute queues internally
         const int stream0_id = 0;
         const int stream1_id = 1;
-    #endif
+#endif
 
         //
         // allocate memory on the device
@@ -192,8 +181,7 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
 
         //
         // hardcode stream submission
-        for(unsigned int i = 0; i < FULL_DATA_SIZE; i += nstreams * N)
-        {
+        for (unsigned int i = 0; i < FULL_DATA_SIZE; i += nstreams * N) {
             //
             // copy the arrays a and b to the device
             cudaMemcpyAsync(dev_a0, a + i, N * sizeof(int), cudaMemcpyHostToDevice, stream0_id);
@@ -206,13 +194,13 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
             // run kernel
             const int blocks = 128;
             const int threads = 128;
-        #if defined(__NVCC__)
-            add<<< blocks, threads, 0, stream0_id >>> (dev_a0, dev_b0, dev_c0, N);
-            add<<< blocks, threads, 0, stream1_id >>> (dev_a1, dev_b1, dev_c1, N);
-        #else
+#if defined(__NVCC__)
+            add<<<blocks, threads, 0, stream0_id>>>(dev_a0, dev_b0, dev_c0, N);
+            add<<<blocks, threads, 0, stream1_id>>>(dev_a1, dev_b1, dev_c1, N);
+#else
             vuda::launchKernel("add.spv", "main", stream0_id, blocks, threads, dev_a0, dev_b0, dev_c0, N);
             vuda::launchKernel("add.spv", "main", stream1_id, blocks, threads, dev_a1, dev_b1, dev_c1, N);
-        #endif
+#endif
 
             //
             // copy result to host
@@ -220,19 +208,19 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
             cudaMemcpyAsync(c + i + N, dev_c1, N * sizeof(int), cudaMemcpyDeviceToHost, stream1_id);
         }
 
-    #if defined(__NVCC__)
+#if defined(__NVCC__)
         cudaStreamSynchronize(stream0_id);
         cudaStreamSynchronize(stream1_id);
         cudaStreamDestroy(stream0_id);
         cudaStreamDestroy(stream1_id);
-    #endif
+#endif
 
         //
         // display results
 #ifdef THREAD_VERBOSE_OUTPUT
         ostr << "thread id: " << tid << ", device id: " << deviceID << ", stream id: " << stream0_id << ", " << stream1_id << ": ";
         std::cout << ostr.str();
-#endif  
+#endif
 
         //
         // free memory on device
@@ -242,9 +230,7 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
         cudaFree(dev_a1);
         cudaFree(dev_b1);
         cudaFree(dev_c1);
-    }
-    catch(...)
-    {
+    } catch (...) {
         HandleException("SingleThreadMultipleStreamsExample");
     }
 
@@ -253,8 +239,7 @@ int Test::SingleThreadMultipleStreamsExample(const int tid, const int nthreads, 
 
 int Test::MultipleThreadsMultipleStreamsExample(const int tid, const int nthreads, const unsigned int FULL_DATA_SIZE, int* a, int* b, int* c)
 {
-    try
-    {
+    try {
         //
         // hardcode device 0
         const int deviceID = 0;
@@ -268,8 +253,7 @@ int Test::MultipleThreadsMultipleStreamsExample(const int tid, const int nthread
         ostr.str("");
 #endif
 
-        if(FULL_DATA_SIZE % nthreads != 0)
-        {
+        if (FULL_DATA_SIZE % nthreads != 0) {
             std::cout << "FULL_DATA_SIZE should be divisible by " << nthreads << std::endl;
             return EXIT_FAILURE;
         }
@@ -286,13 +270,13 @@ int Test::MultipleThreadsMultipleStreamsExample(const int tid, const int nthread
 
         //
         // create streams
-    #if defined(__NVCC__)
+#if defined(__NVCC__)
         cudaStream_t stream_id;
         cudaStreamCreate(&stream_id);
-    #else
+#else
         // for now, vuda does not create streams, but operates with a maximum number of compute queues internally
         const int stream_id = tid;
-    #endif
+#endif
 
         //
         // kernel params
@@ -303,31 +287,29 @@ int Test::MultipleThreadsMultipleStreamsExample(const int tid, const int nthread
         cudaMemcpyAsync(dev_a, a + tid * N, bytesize, cudaMemcpyHostToDevice, stream_id);
         cudaMemcpyAsync(dev_b, b + tid * N, bytesize, cudaMemcpyHostToDevice, stream_id);
 
-        //
-        // run kernel
-        #if defined(__NVCC__)
-            add <<< blocks, threads, 0, stream_id >>> (dev_a, dev_b, dev_c, N);
-        #else
-            vuda::launchKernel("add.spv", "main", stream_id, blocks, threads, dev_a, dev_b, dev_c, N);
-        #endif
+//
+// run kernel
+#if defined(__NVCC__)
+        add<<<blocks, threads, 0, stream_id>>>(dev_a, dev_b, dev_c, N);
+#else
+        vuda::launchKernel("add.spv", "main", stream_id, blocks, threads, dev_a, dev_b, dev_c, N);
+#endif
 
         //
         // copy result to host
         cudaMemcpyAsync(c + tid * N, dev_c, bytesize, cudaMemcpyDeviceToHost, stream_id);
 
-    #if defined(__NVCC__)
+#if defined(__NVCC__)
         cudaStreamSynchronize(stream_id);
         cudaStreamDestroy(stream_id);
-    #endif
+#endif
 
         //
         // free memory on device
         cudaFree(dev_a);
         cudaFree(dev_b);
         cudaFree(dev_c);
-    }
-    catch(...)
-    {
+    } catch (...) {
         HandleException("MultipleThreadsMultipleStreamsExample");
     }
 
@@ -338,17 +320,15 @@ void Test::CheckResult(const unsigned int N, int* a, int* b, int* c)
 {
     std::ostringstream ostr;
     bool resultok = true;
-    for(unsigned int i = 0; i < N; ++i)
-    {
-        if(a[i] + b[i] != c[i])
-        {
+    for (unsigned int i = 0; i < N; ++i) {
+        if (a[i] + b[i] != c[i]) {
             ostr << "ERROR: kernel execution did not provide the right result at index: " << i << ", ";
             ostr << a[i] << " + " << b[i] << " != " << c[i] << std::endl;
             resultok = false;
             break;
         }
     }
-    if(resultok == true)
+    if (resultok == true)
         ostr << "kernel result verified!" << std::endl;
 
     std::cout << ostr.str();
@@ -367,12 +347,12 @@ void Test::Launch(std::string name, const int num_threads, const unsigned int N,
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_int_distribution<int> dist(0, 100);
-    for(unsigned int i = 0; i < N; ++i)
-    {
+    for (unsigned int i = 0; i < N; ++i) {
         a[i] = dist(mt); // -i + tid;
         b[i] = dist(mt); // i*i;
     }
-    std::cout << "done." << std::endl << std::endl;
+    std::cout << "done." << std::endl
+              << std::endl;
 
     //
     // threads
@@ -384,39 +364,38 @@ void Test::Launch(std::string name, const int num_threads, const unsigned int N,
     std::cout << name << std::endl;
     std::cout << std::string(name.length(), '=') << std::endl;
 
-    // 
+    //
     // warm up, pre-create the logical devices
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
-    for(int deviceID = 0; deviceID < deviceCount; ++deviceID)
+    for (int deviceID = 0; deviceID < deviceCount; ++deviceID)
         cudaSetDevice(deviceID);
     cudaSetDevice(0);
 
     totalElapsedTime = 0.0;
-    for(int run = 0; run < totalRuns; ++run)
-    {
+    for (int run = 0; run < totalRuns; ++run) {
         // reset test
-        for(unsigned int i = 0; i < N; ++i)
+        for (unsigned int i = 0; i < N; ++i)
             c[i] = 0;
 
         timer.tic();
         {
-            for(int i = 0; i < num_threads; ++i)
+            for (int i = 0; i < num_threads; ++i)
                 t[i] = std::thread(fptr, i, num_threads, N, a, b, c);
-            for(int i = 0; i < num_threads; ++i)
+            for (int i = 0; i < num_threads; ++i)
                 t[i].join();
         }
         double elapsed = timer.toc();
         std::cout << "run: " << run << ", runtime: " << elapsed << "s" << std::endl;
 
         // exclude the first run (as kernel and memory will be allocated)
-        if(run > 0)
+        if (run > 0)
             totalElapsedTime += elapsed;
 
         // check result
         CheckResult(N, a, b, c);
     }
-    if(totalRuns > 1)
+    if (totalRuns > 1)
         std::cout << "avg. runtime: " << totalElapsedTime / (totalRuns - 1) << "s" << std::endl;
 
     //
@@ -427,14 +406,13 @@ void Test::Launch(std::string name, const int num_threads, const unsigned int N,
     delete[] c;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    try
-        {
+    try {
         //
         // arguments
         std::vector<const char*> args;
-        for(size_t i = 0; i < (size_t)argc; i++)
+        for (size_t i = 0; i < (size_t)argc; i++)
             args.push_back(argv[i]);
 
         //
@@ -442,7 +420,7 @@ int main(int argc, char *argv[])
         // {problem size, run all tests }
 
         unsigned int N = 1000000;
-        //unsigned int test = 0;
+        // unsigned int test = 0;
         std::vector<bool> test_runs(3, true);
         /*if(HandleArguments(N, test) == EXIT_SUCCESS)
             return EXIT_SUCCESS;*/
@@ -451,10 +429,10 @@ int main(int argc, char *argv[])
         // Examples
 
         std::vector<std::string> test_names = {
-        "Single device, single thread, single stream",
-        "Single device, single thread, multiple streams",
-        //"Single device, multiple threads, single stream",
-        "Single device, multiple threads, multiple streams"
+            "Single device, single thread, single stream",
+            "Single device, single thread, multiple streams",
+            //"Single device, multiple threads, single stream",
+            "Single device, multiple threads, multiple streams"
         };
 
         int testid;
@@ -462,24 +440,22 @@ int main(int argc, char *argv[])
         //
         // single device, single thread, single stream
         testid = 0;
-        if(test_runs[testid])
+        if (test_runs[testid])
             Test::Launch(test_names[testid], 1, N, &Test::SingleThreadSingleStreamExample);
 
         //
         // single device, single thread, multiple streams
         testid = 1;
-        if(test_runs[testid])
+        if (test_runs[testid])
             Test::Launch(test_names[testid], 1, N, &Test::SingleThreadMultipleStreamsExample);
 
         //
         // single device, multiple threads, multiple streams
         testid = 2;
-        if(test_runs[testid])
+        if (test_runs[testid])
             Test::Launch(test_names[testid], 8, N, &Test::MultipleThreadsMultipleStreamsExample);
 
-    }
-    catch(...)
-    {
+    } catch (...) {
         HandleException("main");
     }
 

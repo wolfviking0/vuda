@@ -15,8 +15,7 @@
 __global__ void add(const int* dev_a, const int* dev_b, int* dev_c, const int N)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
-    while(tid < N)
-    {
+    while (tid < N) {
         dev_c[tid] = dev_a[tid] + dev_b[tid];
         tid += blockDim.x * gridDim.x;
     }
@@ -31,8 +30,7 @@ int main(void)
     // allocate memory on the device
     const int N = 5000;
     int a[N], b[N], c[N];
-    for(int i = 0; i < N; ++i)
-    {
+    for (int i = 0; i < N; ++i) {
         a[i] = -i;
         b[i] = i * i;
     }
@@ -47,8 +45,8 @@ int main(void)
     const int blocks = 128;
     const int threads = 128;
 #if defined(__NVCC__)
-    //void *args[] = { (void*)&dev_a, (void*)&dev_b, (void*)&dev_c, (void*)&N };
-    //cudaLaunchKernel(add, blocks, threads, args, 0, stream_id);
+    // void *args[] = { (void*)&dev_a, (void*)&dev_b, (void*)&dev_c, (void*)&N };
+    // cudaLaunchKernel(add, blocks, threads, args, 0, stream_id);
     add<<<blocks, threads>>>(dev_a, dev_b, dev_c, N);
 #else
     const int stream_id = 0;
@@ -58,9 +56,8 @@ int main(void)
     cudaMemcpy(c, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost);
 
     // do something useful with the result in array c ...
-    for(int i = 0; i < N; ++i)
-        if(a[i] + b[i] != c[i])
-        {
+    for (int i = 0; i < N; ++i)
+        if (a[i] + b[i] != c[i]) {
             std::cout << "wrong result at index " << i << std::endl;
             break;
         }

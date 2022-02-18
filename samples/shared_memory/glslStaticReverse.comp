@@ -13,12 +13,12 @@ layout(set = 0, binding = 0) buffer D { int d[]; };
 shared int s[64];
 
 void main(void)
-{    
+{
     uint t = gl_LocalInvocationID.x; // threadIdx.x
     uint tr = 64 - t - 1;
     s[t] = d[t];
 
     barrier(); //__syncthreads();
 
-    d[t] = s[tr];    
+    d[t] = s[tr];
 }

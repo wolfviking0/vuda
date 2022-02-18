@@ -20,13 +20,13 @@ layout(set = 0, binding = 2) writeonly buffer C { int c[]; };
 
 void main(void)
 {
-    // CUDA: threadIdx.x + blockIdx.x * blockDim.x    
+    // CUDA: threadIdx.x + blockIdx.x * blockDim.x
     uint tid = gl_GlobalInvocationID.x; // = gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID
-    
+
     while(tid < N)
     {
         c[tid] = a[tid] + b[tid];
-        
+
         //tid += blockDim.x * gridDim.x;
         tid += gl_WorkGroupSize.x * gl_NumWorkGroups.x;
     }

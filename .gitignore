@@ -1,0 +1,18 @@
+#
+# .gitignore
+#
+
+# OSX auto generated file
+.DS_Store
+
+# Build folder
+**/build/
+
+# Build folder when using xcode
+**/xcode/
+
+# Install folder
+**/install/
+
+# Generated shader
+*.spv

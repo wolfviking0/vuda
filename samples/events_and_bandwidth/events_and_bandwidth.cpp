@@ -7,11 +7,11 @@ https://devblogs.nvidia.com/how-optimize-data-transfers-cuda-cc/
 
 */
 
-#include <iostream>
+#include <cstring>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <vector>
-#include <cstring>
 
 #if defined(__NVCC__)
 #include <cuda_runtime.h>
@@ -25,16 +25,17 @@ https://devblogs.nvidia.com/how-optimize-data-transfers-cuda-cc/
 
 #include "../tools/timer.hpp"
 
-double profileTransfer(float *dst, const float *src, unsigned int n, cudaMemcpyKind kind, std::string desc, bool verbose=false)
+double profileTransfer(float* dst, const float* src, unsigned int n, cudaMemcpyKind kind, std::string desc, bool verbose = false)
 {
-    std::cout << std::endl << desc << ", ";
-    if(kind == cudaMemcpyHostToHost)
+    std::cout << std::endl
+              << desc << ", ";
+    if (kind == cudaMemcpyHostToHost)
         std::cout << "HtH";
-    else if(kind == cudaMemcpyHostToDevice)
+    else if (kind == cudaMemcpyHostToDevice)
         std::cout << "HtD";
-    else if(kind == cudaMemcpyDeviceToHost)
+    else if (kind == cudaMemcpyDeviceToHost)
         std::cout << "DtH";
-    else if(kind == cudaMemcpyDeviceToDevice)
+    else if (kind == cudaMemcpyDeviceToDevice)
         std::cout << "DtD";
     std::cout << " transfer" << std::endl;
 
@@ -46,27 +47,25 @@ double profileTransfer(float *dst, const float *src, unsigned int n, cudaMemcpyK
     /*cudaEvent_t startEvent, stopEvent;
     cudaEventCreate(&startEvent);
     cudaEventCreate(&stopEvent);*/
-    
 
-    for(int run=0; run<=runs; ++run)
-    {
-        //cudaEventRecord(startEvent, 0);
+    for (int run = 0; run <= runs; ++run) {
+        // cudaEventRecord(startEvent, 0);
         timer.tic();
         cudaMemcpy(dst, src, bytes, kind);
         time = timer.toc();
-        //cudaEventRecord(stopEvent, 0);
-        //cudaEventSynchronize(stopEvent);
+        // cudaEventRecord(stopEvent, 0);
+        // cudaEventSynchronize(stopEvent);
 
-        //cudaEventElapsedTime(&time, startEvent, stopEvent);
-        if(run != 0)
+        // cudaEventElapsedTime(&time, startEvent, stopEvent);
+        if (run != 0)
             total += time;
-        if(verbose)
+        if (verbose)
             std::cout << "  iter: " << run << ", transfer time (s)   : " << time << std::endl;
     }
 
     // clean up events
-    //cudaEventDestroy(startEvent);
-    //cudaEventDestroy(stopEvent);
+    // cudaEventDestroy(startEvent);
+    // cudaEventDestroy(stopEvent);
 
     time = total / (double)runs;
     double bw = bytes * 1e-9 / time;
@@ -92,21 +91,19 @@ void print_bwresults(std::vector<std::string> memtype, std::vector<double> bwpro
     title("Bandwidth transfer table");
 
     ostr << std::setw(wid) << std::left << "src\\dst";
-    for(unsigned int src = 0; src < nmemtypes; ++src)
+    for (unsigned int src = 0; src < nmemtypes; ++src)
         ostr << std::setw(wid) << std::left << memtype[src];
 
     int iter = 0;
     ostr << std::endl;
-    for(unsigned int src = 0; src < nmemtypes; ++src)
-    {
+    for (unsigned int src = 0; src < nmemtypes; ++src) {
         ostr << std::setw(wid) << std::left << memtype[src];
-        for(unsigned int dst = 0; dst < nmemtypes; ++dst)
-        {
+        for (unsigned int dst = 0; dst < nmemtypes; ++dst) {
             ostr << std::setiosflags(std::ios::fixed)
-                << std::setprecision(3)
-                << std::setw(wid)
-                << std::left
-                << bwprofile[iter++];
+                 << std::setprecision(3)
+                 << std::setw(wid)
+                 << std::left
+                 << bwprofile[iter++];
         }
         ostr << std::endl;
     }
@@ -118,8 +115,7 @@ void run(void)
 {
     int count = 0;
     cudaGetDeviceCount(&count);
-    if(count == 0)
-    {
+    if (count == 0) {
         std::cout << "no devices found" << std::endl;
         return;
     }
@@ -141,18 +137,18 @@ void run(void)
 
     //
     // allocate
-    h_aPageable = (float*)malloc(bytes);                                        // host pageable
-    h_bPageable = (float*)malloc(bytes);                                        // host pageable
-    cudaMalloc((void**)&d_a, bytes);                                          // device
-    cudaMalloc((void**)&d_b, bytes);                                          // device
-    cudaMallocHost((void**)&h_aCached, bytes);                                // host cached
-    cudaMallocHost((void**)&h_bCached, bytes);                                // host cached
-    cudaHostAlloc((void**)&h_aPinned, bytes, cudaHostAllocWriteCombined);   // host pinned
-    cudaHostAlloc((void**)&h_bPinned, bytes, cudaHostAllocWriteCombined);   // host pinned
+    h_aPageable = (float*)malloc(bytes); // host pageable
+    h_bPageable = (float*)malloc(bytes); // host pageable
+    cudaMalloc((void**)&d_a, bytes); // device
+    cudaMalloc((void**)&d_b, bytes); // device
+    cudaMallocHost((void**)&h_aCached, bytes); // host cached
+    cudaMallocHost((void**)&h_bCached, bytes); // host cached
+    cudaHostAlloc((void**)&h_aPinned, bytes, cudaHostAllocWriteCombined); // host pinned
+    cudaHostAlloc((void**)&h_bPinned, bytes, cudaHostAllocWriteCombined); // host pinned
 
     //
     // initialize data
-    for(unsigned int i = 0; i < nElements; ++i)
+    for (unsigned int i = 0; i < nElements; ++i)
         h_aPageable[i] = (float)i;
 
     std::memcpy(h_aPinned, h_aPageable, bytes);
@@ -165,12 +161,13 @@ void run(void)
     // output device info and transfer size
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
-    std::cout << std::endl << "Device: " << prop.name << std::endl;
+    std::cout << std::endl
+              << "Device: " << prop.name << std::endl;
     std::cout << "Transfer size (MB): " << bytes / (1024 * 1024) << std::endl;
 
     //
     // table
-    /* TYPICAL MEMORY TYPES AND TRANSFERS    
+    /* TYPICAL MEMORY TYPES AND TRANSFERS
 
                  | local | pageable | pinned | cached |
         ----------------------------------------------
@@ -179,7 +176,7 @@ void run(void)
         pageable |       ||
         pinned   |  HtD  ||            HtH
         cached   |       ||
-        
+
         [ there also exist hw with device local and host visible memory types ]
 
         local   : device local
@@ -246,27 +243,22 @@ void run(void)
 
 int main()
 {
-    try
-    {
+    try {
         run();
     }
 #if !defined(__NVCC__)
-    catch(vk::SystemError& err)
-    {
+    catch (vk::SystemError& err) {
         std::cout << "vk::SystemError: " << err.what() << std::endl;
         return EXIT_FAILURE;
     }
 #endif
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e) {
         std::cerr << "vuda::Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
-    }
-    catch(...)
-    {
+    } catch (...) {
         std::cout << "unknown error" << std::endl;
         return EXIT_FAILURE;
-    }    
+    }
 
 #if !defined(NDEBUG)
     std::cout << "done." << std::endl;

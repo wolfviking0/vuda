@@ -3,10 +3,9 @@
 #include <sstream>
 #include <stdexcept>
 
-inline void checkError(cudaError_t code, char const * func, const char *file, const int line, bool abort = true)
+inline void checkError(cudaError_t code, char const* func, const char* file, const int line, bool abort = true)
 {
-    if(code != cudaSuccess)
-    {
+    if (code != cudaSuccess) {
         const char* errorMessage = cudaGetErrorString(code);
 
         std::ostringstream throwMessage;
@@ -16,12 +15,14 @@ inline void checkError(cudaError_t code, char const * func, const char *file, co
         throwMessage << "vuda: ";
 #endif
         throwMessage << "error returned from " << func << " at " << file << ":" << line << ", Error code: " << code << " (" << errorMessage << ")" << std::endl;
-        if(abort)
-        {
-            cudaDeviceReset();            
+        if (abort) {
+            cudaDeviceReset();
             throw std::runtime_error(throwMessage.str());
         }
     }
 }
 
-#define SafeCall(val) { checkError((val), #val, __FILE__, __LINE__); }
+#define SafeCall(val)                                \
+    {                                                \
+        checkError((val), #val, __FILE__, __LINE__); \
+    }

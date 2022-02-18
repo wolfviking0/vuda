@@ -57,6 +57,6 @@ int main(void)
         if(d[i] != r[i]) printf("Error: d[%d]!=r[%d] (%d, %d)n", i, i, d[i], r[i]);
 
     cudaFree(d_d);
-    printf("done.\n");    
+    printf("done.\n");
     return 0;
 }

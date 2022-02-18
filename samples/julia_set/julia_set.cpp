@@ -1,8 +1,8 @@
 
-#include <cstdlib>
-#include <cstdio>
-#include <complex>
 #include "miniz.h"
+#include <complex>
+#include <cstdio>
+#include <cstdlib>
 
 #include <vuda.hpp>
 
@@ -25,12 +25,11 @@ int julia(int x, int y)
 
     std::complex<float> c(-0.8f, -0.156f);
     std::complex<float> a(jx, jy);
- 
-    for(int i = 0; i < 200; ++i)
-    {
+
+    for (int i = 0; i < 200; ++i) {
         a = a * a + c;
 
-        if(std::norm(a) > 1000)
+        if (std::norm(a) > 1000)
             return 0;
     }
     return 1;
@@ -40,11 +39,9 @@ int julia(int x, int y)
 // host implementation
 //
 void host_kernel(uint8_t* ptr)
-{    
-    for(int y = 0; y < DIM; y++)
-    {
-        for(int x = 0; x < DIM; x++)
-        {
+{
+    for (int y = 0; y < DIM; y++) {
+        for (int x = 0; x < DIM; x++) {
             int offset = x + y * DIM;
 
             int juliaValue = julia(x, y);
@@ -95,12 +92,12 @@ int main()
 
     //
     // output filename
-    static const char *pFilename = "julia_set.png";
-    uint8_t* ptr_image = (uint8_t*) std::malloc(iXmax * 4 * iYmax);
+    static const char* pFilename = "julia_set.png";
+    uint8_t* ptr_image = (uint8_t*)std::malloc(iXmax * 4 * iYmax);
 
     //
     // host implementation
-    //host_kernel(ptr_image);
+    // host_kernel(ptr_image);
 
     //
     // device implementation
@@ -112,12 +109,11 @@ int main()
     //
     {
         size_t png_data_size = 0;
-        void *pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(ptr_image, iXmax, iYmax, 4, &png_data_size, 6, MZ_FALSE);
-        if(!pPNG_data)
+        void* pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(ptr_image, iXmax, iYmax, 4, &png_data_size, 6, MZ_FALSE);
+        if (!pPNG_data)
             fprintf(stderr, "tdefl_write_image_to_png_file_in_memory_ex() failed!\n");
-        else
-        {
-            FILE *pFile = fopen(pFilename, "wb");
+        else {
+            FILE* pFile = fopen(pFilename, "wb");
             fwrite(pPNG_data, 1, png_data_size, pFile);
             fclose(pFile);
             printf("Wrote %s\n", pFilename);

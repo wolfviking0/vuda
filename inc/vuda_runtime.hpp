@@ -53,7 +53,6 @@ inline cudaError_t cudaGetDeviceProperties(cudaDeviceProp* prop, int device)
     return vuda::getDeviceProperties(prop, device);
 }
 
-
 // Destroy all allocations and reset all state on the current device in the current process.
 inline cudaError_t cudaDeviceReset(void)
 {
@@ -72,7 +71,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 // Gets the flags for the current device.
 cudaError_t cudaGetDeviceFlags(unsigned int* flags)
 {
-    
+
 }*/
 
 // Set device to be used for GPU executions.
@@ -80,7 +79,6 @@ inline cudaError_t cudaSetDevice(int device)
 {
     return vuda::setDevice(device);
 }
-
 
 ////////////////////////////////////////////////
 // Error Handling
@@ -164,7 +162,7 @@ inline cudaError_t cudaStreamGetPriority(cudaStream_t hStream, int* priority)
 
 }
 
-// Returns a stream's capture status. 
+// Returns a stream's capture status.
 inline cudaError_t cudaStreamIsCapturing(cudaStream_t stream, cudaStreamCaptureStatus ** pCaptureStatus)
 {
 

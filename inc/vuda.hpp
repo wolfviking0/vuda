@@ -2,7 +2,7 @@
 #include "setup/setup.hpp"
 
 #pragma once
-
+// clang-format off
 #include <vulkan/vulkan.hpp>
 #include <iostream>
 #include <sstream>
@@ -59,3 +59,4 @@ instantiation of singletons:
 #include "api/streammgr.hpp"
 #include "api/eventmgr.hpp"
 #include "api/vudakernel.hpp"
+// clang-format on
