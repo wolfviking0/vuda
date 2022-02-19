@@ -6,7 +6,33 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
 
 PROJECT(vuda LANGUAGES CXX)
 
-FIND_PACKAGE(Vulkan REQUIRED FATAL_ERROR)
+IF(APPLE)
+    SET(MOLTENVK_REPO_ROOT "MOLTENVK-NOTFOUND" CACHE PATH "Absolute path to a MoltenVK repo directory")
+    IF(NOT MOLTENVK_REPO_ROOT AND NOT DEFINED ENV{MOLTENVK_REPO_ROOT})
+        MESSAGE(FATAL_ERROR "Must define location of MoltenVK repo")
+    ENDIF()
+    IF(NOT MOLTENVK_REPO_ROOT)
+        SET(MOLTENVK_REPO_ROOT $ENV{MOLTENVK_REPO_ROOT})
+    ENDIF()
+    MESSAGE(STATUS "Using MoltenVK repo location at ${MOLTENVK_REPO_ROOT}")
+ENDIF()
+MESSAGE(STATUS "Using find_package to locate Vulkan")
+
+FIND_PACKAGE(Vulkan)
+
+# "Vulkan::Vulkan" on macOS causes the framework to be linked to the app instead of an individual library
+SET(LIBVK "Vulkan::Vulkan")
+MESSAGE(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
+MESSAGE(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
+MESSAGE(STATUS "Vulkan Headers Include = ${Vulkan_INCLUDE_DIR}")
+
+IF(APPLE)
+    INCLUDE(mac_common.cmake)
+ENDIF()
+
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    ADD_DEFINITIONS(-DVK_USE_PLATFORM_MACOS_MVK)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${Vulkan_INCLUDE_DIR})
 
