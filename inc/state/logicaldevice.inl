@@ -912,7 +912,6 @@ m_commandBufferState(m_queueComputeCount, cbReset)*/
     inline std::vector<char> logical_device::ReadShaderModuleFromFile(const std::string& filename) const
     {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
         if (!file.is_open())
             throw std::runtime_error("Failed to open shader file!");
 

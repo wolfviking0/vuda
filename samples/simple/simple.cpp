@@ -49,7 +49,8 @@ int main(void)
     // cudaLaunchKernel(add, blocks, threads, args, 0, stream_id);
     add<<<blocks, threads>>>(dev_a, dev_b, dev_c, N);
 #else
-    const int stream_id = 0;
+    const int stream_id
+        = 0;
     vuda::launchKernel("add.spv", "main", stream_id, blocks, threads, dev_a, dev_b, dev_c, N);
 #endif
     // copy result to host
