@@ -2,6 +2,19 @@
 
 VUDA is a header-only library based on Vulkan that provides a CUDA Runtime API interface for writing GPU-accelerated applications.
 
+## MoltenVK - OSX
+
+Add to your ~/.bash_profile
+```
+export VULKAN_SDK="$HOME/VulkanSDK/1.3.204.0/macOS"
+export PATH="$PATH:$VULKAN_SDK/bin"
+export DYLD_LIBRARY_PATH="$VULKAN_SDK/lib:${DYLD_LIBRARY_PATH:-}"
+export VK_LAYER_PATH="$VULKAN_SDK/share/vulkan/explicit_layer.d"
+export VK_ICD_FILENAMES="$VULKAN_SDK/share/vulkan/icd.d/MoltenVK_icd.json"
+
+alias python='python3'
+```
+
 ## Documentation
 
 VUDA is based on the [Vulkan API](https://www.khronos.org/vulkan/). The functionality of VUDA conforms (as much as possible) to the specification of the CUDA runtime. For normal usage consult the reference guide for the [NVIDIA CUDA Runtime API](https://docs.nvidia.com/cuda/cuda-runtime-api/index.html), otherwise check the VUDA wiki:
@@ -54,7 +67,7 @@ int main(void)
     // copy result to host
     cudaMemcpy(c, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost);
 
-    // do something useful with the result in array c ...        
+    // do something useful with the result in array c ...
 
     // free memory on device
     cudaFree(dev_a);
