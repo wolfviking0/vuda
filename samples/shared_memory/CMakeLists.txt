@@ -19,9 +19,14 @@ FOREACH(SHADER IN LISTS SHADERS)
     LIST(APPEND SPV_SHADERS ${BINARY_DIR}/${FILENAME}.spv)
 ENDFOREACH()
 
-ADD_CUSTOM_TARGET(shaders_shared_memory ALL DEPENDS ${SPV_SHADERS})
-ADD_EXECUTABLE(shared_memory shared_memory.cpp ${SHADERS})
-ADD_DEPENDENCIES(shared_memory shaders_shared_memory)
+IF(NO_CUDA)
+    ADD_CUSTOM_TARGET(shaders_shared_memory ALL DEPENDS ${SPV_SHADERS})
+    ADD_EXECUTABLE(shared_memory shared_memory.cpp ${SHADERS})
+    ADD_DEPENDENCIES(shared_memory shaders_shared_memory)
+ELSE()
+    SET_SOURCE_FILES_PROPERTIES(shared_memory.cpp PROPERTIES LANGUAGE CUDA)
+    ADD_EXECUTABLE(shared_memory shared_memory.cpp shared_memory.cu)
+ENDIF()
 
 ADD_TEST(
     NAME shared_memory

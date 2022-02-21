@@ -19,9 +19,14 @@ FOREACH(SHADER IN LISTS SHADERS)
     LIST(APPEND SPV_SHADERS ${BINARY_DIR}/${FILENAME}.spv)
 ENDFOREACH()
 
-ADD_CUSTOM_TARGET(shaders_threads_and_streams ALL DEPENDS ${SPV_SHADERS})
-ADD_EXECUTABLE(threads_and_streams threads_and_streams.cpp ${SHADERS})
-ADD_DEPENDENCIES(threads_and_streams shaders_threads_and_streams)
+IF(NO_CUDA)
+    ADD_CUSTOM_TARGET(shaders_threads_and_streams ALL DEPENDS ${SPV_SHADERS})
+    ADD_EXECUTABLE(threads_and_streams threads_and_streams.cpp ${SHADERS})
+    ADD_DEPENDENCIES(threads_and_streams shaders_threads_and_streams)
+ELSE()
+    SET_SOURCE_FILES_PROPERTIES(threads_and_streams.cpp PROPERTIES LANGUAGE CUDA)
+    ADD_EXECUTABLE(threads_and_streams threads_and_streams.cpp)
+ENDIF()
 
 ADD_TEST(
     NAME threads_and_streams

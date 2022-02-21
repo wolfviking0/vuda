@@ -19,9 +19,14 @@ FOREACH(SHADER IN LISTS SHADERS)
     LIST(APPEND SPV_SHADERS ${BINARY_DIR}/${FILENAME}.spv)
 ENDFOREACH()
 
-ADD_CUSTOM_TARGET(shaders_julia_set ALL DEPENDS ${SPV_SHADERS})
-ADD_EXECUTABLE(julia_set julia_set.cpp;miniz.c ${SHADERS})
-ADD_DEPENDENCIES(julia_set shaders_julia_set)
+IF(NO_CUDA)
+    ADD_CUSTOM_TARGET(shaders_julia_set ALL DEPENDS ${SPV_SHADERS})
+    ADD_EXECUTABLE(julia_set julia_set.cpp;miniz.c ${SHADERS})
+    ADD_DEPENDENCIES(julia_set shaders_julia_set)
+ELSE()
+    SET_SOURCE_FILES_PROPERTIES(julia_set.cpp PROPERTIES LANGUAGE CUDA)
+    ADD_EXECUTABLE(julia_set julia_set.cpp)
+ENDIF()
 
 ADD_TEST(
     NAME julia_set

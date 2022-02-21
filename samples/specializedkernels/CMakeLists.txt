@@ -19,9 +19,14 @@ FOREACH(SHADER IN LISTS SHADERS)
     LIST(APPEND SPV_SHADERS ${BINARY_DIR}/${FILENAME}.spv)
 ENDFOREACH()
 
-ADD_CUSTOM_TARGET(shaders_specializedkernels ALL DEPENDS ${SPV_SHADERS})
-ADD_EXECUTABLE(specializedkernels specializedkernels.cpp ${SHADERS})
-ADD_DEPENDENCIES(specializedkernels shaders_specializedkernels)
+IF(NO_CUDA)
+    ADD_CUSTOM_TARGET(shaders_specializedkernels ALL DEPENDS ${SPV_SHADERS})
+    ADD_EXECUTABLE(specializedkernels specializedkernels.cpp ${SHADERS})
+    ADD_DEPENDENCIES(specializedkernels shaders_specializedkernels)
+ELSE()
+    SET_SOURCE_FILES_PROPERTIES(specializedkernels.cpp PROPERTIES LANGUAGE CUDA)
+    ADD_EXECUTABLE(specializedkernels specializedkernels.cpp)
+ENDIF()
 
 ADD_TEST(
     NAME specializedkernels
