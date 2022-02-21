@@ -105,12 +105,8 @@ int main()
         return EXIT_FAILURE;
     }
 
-    /*std::cout << "done" << std::endl;
-    std::cin.get();*/
-
 #ifndef NDEBUG
     std::cout << "done." << std::endl;
-    std::cin.get();
 #endif
     return EXIT_SUCCESS;
 }

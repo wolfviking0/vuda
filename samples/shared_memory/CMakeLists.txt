@@ -22,3 +22,9 @@ ENDFOREACH()
 ADD_CUSTOM_TARGET(shaders_shared_memory ALL DEPENDS ${SPV_SHADERS})
 ADD_EXECUTABLE(shared_memory shared_memory.cpp ${SHADERS})
 ADD_DEPENDENCIES(shared_memory shaders_shared_memory)
+
+ADD_TEST(
+    NAME shared_memory
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/shared_memory
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)

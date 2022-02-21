@@ -106,7 +106,6 @@ int main()
 
 #ifndef NDEBUG
     std::cout << "done." << std::endl;
-    std::cin.get();
 #endif
     return EXIT_SUCCESS;
 }

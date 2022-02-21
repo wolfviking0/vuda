@@ -22,3 +22,9 @@ ENDFOREACH()
 ADD_CUSTOM_TARGET(shaders_threads_and_streams ALL DEPENDS ${SPV_SHADERS})
 ADD_EXECUTABLE(threads_and_streams threads_and_streams.cpp ${SHADERS})
 ADD_DEPENDENCIES(threads_and_streams shaders_threads_and_streams)
+
+ADD_TEST(
+    NAME threads_and_streams
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/threads_and_streams
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)

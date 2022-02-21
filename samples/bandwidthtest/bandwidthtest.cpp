@@ -194,7 +194,6 @@ int main()
 
 #if !defined(NDEBUG)
     std::cout << "done." << std::endl;
-    std::cin.get();
 #endif
     return 0;
 }

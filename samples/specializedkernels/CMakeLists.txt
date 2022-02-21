@@ -22,3 +22,9 @@ ENDFOREACH()
 ADD_CUSTOM_TARGET(shaders_specializedkernels ALL DEPENDS ${SPV_SHADERS})
 ADD_EXECUTABLE(specializedkernels specializedkernels.cpp ${SHADERS})
 ADD_DEPENDENCIES(specializedkernels shaders_specializedkernels)
+
+ADD_TEST(
+    NAME specializedkernels
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/specializedkernels
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)

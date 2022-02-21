@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
 
 #ifndef NDEBUG
     std::cout << "done." << std::endl;
-    std::cin.get();
 #endif
     return 0;
 }

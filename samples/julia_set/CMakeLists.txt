@@ -22,3 +22,9 @@ ENDFOREACH()
 ADD_CUSTOM_TARGET(shaders_julia_set ALL DEPENDS ${SPV_SHADERS})
 ADD_EXECUTABLE(julia_set julia_set.cpp;miniz.c ${SHADERS})
 ADD_DEPENDENCIES(julia_set shaders_julia_set)
+
+ADD_TEST(
+    NAME julia_set
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/julia_set
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
