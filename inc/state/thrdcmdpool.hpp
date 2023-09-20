@@ -351,7 +351,8 @@ namespace detail {
                 // for now just wait for the queue to become idle
                 vk::Result res = device->waitForFences(1, &m_ufences[stream].get(), VK_FALSE, (std::numeric_limits<uint64_t>::max)());
                 assert(res == vk::Result::eSuccess);
-                device->resetFences(1, &m_ufences[stream].get());
+                res = device->resetFences(1, &m_ufences[stream].get());
+                assert(res == vk::Result::eSuccess);
 
                 //
                 // reset command buffer

@@ -166,7 +166,8 @@ namespace detail {
 
         void reset(const vk::Device device)
         {
-            device.resetFences(1, &m_fence);
+            vk::Result res = device.resetFences(1, &m_fence);
+            assert(res == vk::Result::eSuccess);
 
             //
             // return all descriptor sets to their respective pools
